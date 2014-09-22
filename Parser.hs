@@ -2,6 +2,7 @@ module Parser where
 
 import Text.Parsec
 import Text.Parsec.String
+import Data.Char (isLower)
 
 import Lisp
 import LispMath
@@ -12,7 +13,15 @@ readExpr expr = case parse parseExpr "" expr of
     Right expr -> expr
 
 parseExpr :: Parser Expr
-parseExpr = (try parseLambda) <|> (try parseDefine) <|> parseNumber <|> parseString <|> parseSymbol <|> parseList
+parseExpr =     (try parseFunctionDef)
+            <|> (try parseLambda)
+            <|> (try parseDefine)
+            <|> parseNil
+            <|> parseNumber
+            <|> parseString
+            <|> parseSymbol 
+            <|> parseList
+            <|> parseBool
 
 parseNumber :: Parser Expr
 parseNumber = do
@@ -21,7 +30,7 @@ parseNumber = do
 
 parseSymbol :: Parser Expr
 parseSymbol = do
-              sym <- many1 letter <|> (fmap (:[]) (oneOf "+*/-"))
+              sym <- parseName <|> (fmap (:[]) (oneOf "+*/-"))
               return $ Symbol sym
 
 parseString :: Parser Expr
@@ -40,14 +49,14 @@ parseList = do
 
 parseDefine :: Parser Expr
 parseDefine = do
-    _ <- char '('
-    _ <- string "def"
-    _ <- char ' '
-    s <- many1 letter
-    _ <- char ' '
-    e <- parseExpr
-    _ <- char ')'
-    return $ Define s e
+    _   <- char '('
+    _   <- string "def"
+    _   <- char ' '
+    sym <- parseName
+    _   <- char ' '
+    e   <- parseExpr
+    _   <- char ')'
+    return $ Define sym e
 
 parseLambda = do
     _        <- char '('
@@ -60,3 +69,38 @@ parseLambda = do
     expr     <- parseExpr
     _        <- char ')'
     return $ Lambda captured expr
+
+parseFunctionDef :: Parser Expr
+parseFunctionDef = do
+    _        <- string "(def ("
+    fn       <- parseName
+    _        <- char ' '
+    captured <- sepBy (many1 letter) (char ' ')
+    _        <- string ") "
+    expr     <- parseExpr
+    _        <- char ')'
+    return $ sugaredLambda fn captured expr
+    where
+        sugaredLambda f cap e = Define f (Lambda cap e)
+
+parseNil :: Parser Expr
+parseNil = do
+    _ <- string "Nil"
+    return Nil
+
+parseBool :: Parser Expr
+parseBool = do
+    _ <- char '#'
+    b <- char 't' <|> char 'f'
+    return $ case b of
+        't' -> Bool True
+        'f' -> Bool False
+
+parseName :: Parser String
+parseName = do
+    fst  <- satisfy isLower
+    name <- many $ (satisfy isLower) <|> char '-'
+    qm   <- optionMaybe (char '?')
+    return $ case qm of
+                Just _  -> (fst:name) ++ "?"
+                Nothing -> (fst:name)

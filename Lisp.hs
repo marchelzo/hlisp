@@ -11,7 +11,14 @@ import LispMath
 type Context = M.Map String Expr
 
 defaultContext :: Context
-defaultContext = M.fromList [("+", Fn plus), ("-", Fn minus), ("*", Fn mult), ("/", Fn divide)]
+defaultContext = M.fromList [("+", Fn plus), ("-", Fn minus), ("*", Fn mult), ("/", Fn divide)
+                            ,("cons", Fn cons)
+                            ,("car", Fn car)
+                            ,("cdr", Fn cdr)
+                            ,("nil?", Fn nil)
+                            ,("if", Fn lispIf)
+                            ,("eq?", Fn eq)
+                            ]
 
 newtype REPL a = REPL {
     runREPL :: StateT Context IO a
@@ -35,6 +42,8 @@ eval (Define s e) = do
     let newCtx = M.insert s expr ctx
     put newCtx
     return Bottom
+eval Nil = return Nil
+eval (Bool b) = return (Bool b)
 
 apply :: Expr -> [Expr] -> REPL Expr
 apply (Fn f) xs = return $ f xs
