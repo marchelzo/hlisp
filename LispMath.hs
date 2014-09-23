@@ -10,12 +10,13 @@ data Expr = Number Double
           | Nil
           | List [Expr]
           | Bool Bool
+          | If Expr Expr Expr
           | Bottom
           | Lambda [String] Expr
           | Fn ([Expr] -> Expr)
 
 instance Show Expr where
-    show (Fn _) = "<procedure>"
+    show (Fn _)       = "<procedure>"
     show (Lambda _ _) = "<procedure>"
     show (Number x)   = show x
     show (String s)   = show s
@@ -25,8 +26,9 @@ instance Show Expr where
     show (Define _ _) = "<define>"
     show (Cons x xs)  = "(" ++ concat (intersperse " " $ (map show (x:xs))) ++ ")"
     show Nil          = "Nil"
-    show (Bool True)    = "#t"
-    show (Bool False)   = "#f"
+    show (Bool True)  = "#t"
+    show (Bool False) = "#f"
+    show _            = "<procedure>"
 
 
 plus :: [Expr] -> Expr

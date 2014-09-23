@@ -4,18 +4,18 @@ import Text.Parsec
 import Text.Parsec.String
 import Data.Char (isLower)
 
-import Lisp
 import LispMath
 
 readExpr :: String -> Expr
-readExpr expr = case parse parseExpr "" expr of
+readExpr e = case parse parseExpr "" e of
     Left err   -> error $ show err
     Right expr -> expr
 
 parseExpr :: Parser Expr
-parseExpr =     (try parseFunctionDef)
-            <|> (try parseLambda)
-            <|> (try parseDefine)
+parseExpr =     try parseFunctionDef
+            <|> try parseLambda
+            <|> try parseDefine
+            <|> try parseIf
             <|> parseNil
             <|> parseNumber
             <|> parseString
@@ -30,7 +30,7 @@ parseNumber = do
 
 parseSymbol :: Parser Expr
 parseSymbol = do
-              sym <- parseName <|> (fmap (:[]) (oneOf "+*/-"))
+              sym <- parseName <|> fmap (:[]) (oneOf "+*/-")
               return $ Symbol sym
 
 parseString :: Parser Expr
@@ -58,6 +58,7 @@ parseDefine = do
     _   <- char ')'
     return $ Define sym e
 
+parseLambda :: Parser Expr
 parseLambda = do
     _        <- char '('
     _        <- string "lambda"
@@ -93,14 +94,25 @@ parseBool = do
     _ <- char '#'
     b <- char 't' <|> char 'f'
     return $ case b of
-        't' -> Bool True
-        'f' -> Bool False
+                't' -> Bool True
+                _   -> Bool False
 
 parseName :: Parser String
 parseName = do
-    fst  <- satisfy isLower
-    name <- many $ (satisfy isLower) <|> char '-'
-    qm   <- optionMaybe (char '?')
+    first <- satisfy isLower
+    name  <- many $ satisfy isLower <|> char '-'
+    qm    <- optionMaybe (char '?')
     return $ case qm of
-                Just _  -> (fst:name) ++ "?"
-                Nothing -> (fst:name)
+                Just _  -> (first:name) ++ "?"
+                Nothing -> first:name
+
+parseIf :: Parser Expr
+parseIf = do
+    _ <- string "(if "
+    c <- parseExpr
+    _ <- char ' '
+    a <- parseExpr
+    _ <- char ' '
+    b <- parseExpr
+    _ <- char ')'
+    return $ If c a b

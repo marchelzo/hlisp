@@ -16,7 +16,6 @@ defaultContext = M.fromList [("+", Fn plus), ("-", Fn minus), ("*", Fn mult), ("
                             ,("car", Fn car)
                             ,("cdr", Fn cdr)
                             ,("nil?", Fn nil)
-                            ,("if", Fn lispIf)
                             ,("eq?", Fn eq)
                             ]
 
@@ -31,8 +30,8 @@ eval (Symbol s) = do
     ctx <- get
     return (ctx M.! s)
 eval (List (x:xs)) = do
+    x'  <- eval x
     xs' <- sequence $ map eval xs
-    x' <- eval x
     apply x' xs'
 eval (Fn f) = return (Fn f)
 eval (Lambda cs e) = return (Lambda cs e)
@@ -44,6 +43,12 @@ eval (Define s e) = do
     return Bottom
 eval Nil = return Nil
 eval (Bool b) = return (Bool b)
+eval (Cons x xs) = return $ Cons x xs
+eval (If cond a b) = do
+    bool <- eval cond
+    case bool of
+        (Bool False) -> eval b
+        _            -> eval a
 
 apply :: Expr -> [Expr] -> REPL Expr
 apply (Fn f) xs = return $ f xs
