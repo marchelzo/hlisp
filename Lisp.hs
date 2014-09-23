@@ -52,6 +52,16 @@ eval (If cond a b) = do
 
 apply :: Expr -> [Expr] -> REPL Expr
 apply (Fn f) xs = return $ f xs
+apply (Lambda cs (Lambda ics e)) xs = do
+    ctx <- get
+    let lambdaContext = M.fromList $ zip cs xs
+    let newCtx = M.union lambdaContext ctx
+    put newCtx
+    result <- partialEval e
+    put ctx
+    return $ Lambda ics result
+
+
 apply (Lambda cs e) xs = do
     ctx <- get
     let lambdaContext = M.fromList $ zip cs xs
@@ -60,3 +70,15 @@ apply (Lambda cs e) xs = do
     result <- eval e
     put ctx
     return result
+
+partialEval :: Expr -> REPL Expr
+partialEval (Symbol s) = do
+    ctx <- get
+    let res = M.lookup s ctx
+    return $ case res of
+        Just r -> r
+        _      -> Symbol s
+partialEval (List xs) = do
+    xs' <- sequence $ map partialEval xs
+    return $ List xs'
+partialEval x = return x

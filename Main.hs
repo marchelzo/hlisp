@@ -4,10 +4,12 @@ import Parser
 import Lisp
 import LispMath()
 import Control.Monad.State
-import Control.Monad
+import System.IO
 
 main :: IO ()
-main = execStateT (runREPL replSession) defaultContext >> return ()
+main = do
+    hSetBuffering stdout NoBuffering
+    void $ execStateT (runREPL replSession) defaultContext
 
 replSession :: REPL ()
 replSession = do
