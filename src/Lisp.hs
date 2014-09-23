@@ -17,6 +17,7 @@ defaultContext = M.fromList [("+", Fn plus), ("-", Fn minus), ("*", Fn mult), ("
                             ,("cdr", Fn cdr)
                             ,("nil?", Fn nil)
                             ,("eq?", Fn eq)
+                            ,("list", Fn mkList)
                             ]
 
 newtype REPL a = REPL {

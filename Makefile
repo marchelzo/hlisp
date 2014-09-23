@@ -1,6 +1,6 @@
 build:
-	ghc -O3 -o repl *.hs
+	ghc -O3 -o repl src/*.hs
 
 clean:
-	rm *.o
-	rm *.hi
+	rm src/*.o
+	rm src/*.hi

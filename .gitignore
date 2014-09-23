@@ -1,6 +1,6 @@
-*.o
-*.hi
-*.swp
-*~
-*#
+src/*.o
+src/*.hi
+src/*.swp
+src/*~
+src/*#
 repl

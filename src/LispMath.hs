@@ -67,3 +67,6 @@ eq [Number x, Number y] = Bool (x == y)
 eq [String x, String y] = Bool (x == y)
 eq [_, _]               = Bool False
 
+mkList :: [Expr] -> Expr
+mkList [] = Nil
+mkList (x:xs) = Cons x xs
