@@ -17,7 +17,7 @@ parseExpr =     try parseFunctionDef
             <|> try parseDefine
             <|> try parseIf
             <|> parseNil
-            <|> try parseNumber
+            <|> parseNumber
             <|> parseString
             <|> parseSymbol 
             <|> parseList
@@ -120,7 +120,7 @@ parseIf = do
     return $ If c a b
 
 parseSign :: Num a => Parser a
-parseSign = do
+parseSign = try $ do
     s <- optionMaybe (char '-')
     return $ case s of
         Just '-' -> -1
