@@ -1,5 +1,6 @@
 src/*.o
 src/*.hi
+src/*.swo
 src/*.swp
 src/*~
 src/*#
