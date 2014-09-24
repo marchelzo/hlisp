@@ -6,8 +6,8 @@ data Expr = Number Double
           | String String
           | Symbol String
           | Define String Expr
-          | Cons Expr [Expr]
-          | Nil
+          | Eval Expr
+          | Quoted Expr
           | List [Expr]
           | Bool Bool
           | If Expr Expr Expr
@@ -22,14 +22,13 @@ instance Show Expr where
     show (Number x)   = showNum x
     show (String s)   = show s
     show (List xs)    = show xs
-    show (Symbol s)   = "symbol `" ++ show s ++ "`"
+    show (Symbol s)   = s
     show Bottom       = ""
     show (Define _ _) = "<define>"
-    show (Cons x xs)  = "(" ++ concat (intersperse " " $ (map show (x:xs))) ++ ")"
-    show Nil          = "Nil"
     show (Bool True)  = "#t"
     show (Bool False) = "#f"
     show (Error e)    = e
+    show (Quoted q)   = showQuoted q
     show _            = "<procedure>"
 
 
@@ -49,19 +48,18 @@ lispSqrt :: [Expr] -> Expr
 lispSqrt [Number x] = Number (sqrt x)
 
 cons :: [Expr] -> Expr
-cons [x, Cons y ys] = Cons x (y:ys)
-cons [x, Nil]       = Cons x []
+cons [x, Quoted (List xs)] = Quoted (List (x:xs))
 
 car :: [Expr] -> Expr
-car [Cons x _] = x
+car [Quoted (List (x:xs))] = x
 
 cdr :: [Expr] -> Expr
-cdr [Cons _ (x:xs)] = Cons x xs
-cdr [Cons _ []]       = Nil
+cdr [Quoted (List (x:xs))] = Quoted (List xs)
+cdr e                      = Error ("error: cdr takes a pair, given: " ++ show e)
 
 nil :: [Expr] -> Expr
-nil [Nil] = Bool True
-nil _     = Bool False
+nil [(Quoted (List []))] = Bool True
+nil _                    = Bool False
 
 lispIf :: [Expr] -> Expr
 lispIf [(Bool False), _, x] = x
@@ -74,12 +72,10 @@ eq [_, _]               = Bool False
 eq _                    = Error "error: eq takes two arguments that"
 
 mkList :: [Expr] -> Expr
-mkList [] = Nil
-mkList (x:xs) = Cons x xs
+mkList xs = Quoted (List xs)
 
 lispMap :: [Expr] -> Expr
-lispMap [f, Cons x ys] = Cons (List [f, x]) [List [f, y] | y <- ys]
-lispMap [_, Nil]           = Nil
+lispMap [_, x]           = x
 
 lispAnd :: [Expr] -> Expr
 lispAnd [Bool p, Bool q] = Bool (p && q)
@@ -93,3 +89,7 @@ showNum :: Double -> String
 showNum x
     | x == fromIntegral (round x) = takeWhile (/='.') (show x)
     | otherwise                   = show x
+
+showQuoted :: Expr -> String
+showQuoted (List xs) = "(" ++ concat (intersperse " " $ (map show xs)) ++ ")"
+showQuoted q         = show q

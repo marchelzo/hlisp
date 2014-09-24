@@ -10,7 +10,7 @@ import LispMath
 
 type Context = M.Map String Expr
 
-defaultContext :: Context
+
 defaultContext = M.fromList [("+", Fn plus), ("-", Fn minus), ("*", Fn mult), ("/", Fn divide)
                             ,("cons", Fn cons)
                             ,("car", Fn car)
@@ -49,14 +49,16 @@ eval (Define s e) = do
     let newCtx = M.insert s expr ctx
     put newCtx
     return Bottom
-eval Nil = return Nil
 eval (Bool b) = return (Bool b)
-eval (Cons x xs) = return $ Cons x xs
 eval (If cond a b) = do
     bool <- eval cond
     case bool of
         (Bool False) -> eval b
         _            -> eval a
+eval (Quoted (Number x)) = return (Number x)
+eval (Quoted e) = return (Quoted e)
+eval (Eval (Quoted e)) = eval e
+eval (Eval e)          = eval e
 eval e = return e
 
 apply :: Expr -> [Expr] -> REPL Expr

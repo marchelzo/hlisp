@@ -14,6 +14,8 @@ parseExpr =     try parseFunctionDef
             <|> try parseLambda
             <|> try parseDefine
             <|> try parseIf
+            <|> try parseEval
+            <|> parseQuoted
             <|> parseNil
             <|> try parseNumber
             <|> parseString
@@ -87,7 +89,7 @@ parseFunctionDef = do
 parseNil :: Parser Expr
 parseNil = do
     _ <- string "Nil"
-    return Nil
+    return (Quoted (List []))
 
 parseBool :: Parser Expr
 parseBool = do
@@ -117,6 +119,19 @@ parseIf = do
     _ <- char ')'
     return $ If c a b
 
+parseQuoted :: Parser Expr
+parseQuoted = do
+    _ <- char '\''
+    e <- parseExpr
+    return (Quoted e)
+
+parseEval :: Parser Expr
+parseEval = do
+    _ <- string "(eval "
+    e <- parseExpr
+    _ <- char ')'
+    return (Eval e)
+    
 parseSign :: Num a => Parser a
 parseSign = do
     s <- optionMaybe (char '-')
