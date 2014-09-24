@@ -18,6 +18,10 @@ defaultContext = M.fromList [("+", Fn plus), ("-", Fn minus), ("*", Fn mult), ("
                             ,("nil?", Fn nil)
                             ,("eq?", Fn eq)
                             ,("list", Fn mkList)
+                            ,("map", Fn lispMap)
+                            ,("or", Fn lispOr)
+                            ,("and", Fn lispAnd)
+                            ,("sqrt", Fn lispSqrt)
                             ]
 
 newtype REPL a = REPL {
@@ -29,7 +33,10 @@ eval (Number x) = return (Number x)
 eval (String s) = return (String s)
 eval (Symbol s) = do
     ctx <- get
-    return (ctx M.! s)
+    let res = M.lookup s ctx
+    return $ case res of
+        Just e -> e
+        _      -> Error ("reference to undefined symbol: `" ++ s ++ "`")
 eval (List (x:xs)) = do
     x'  <- eval x
     xs' <- sequence $ map eval xs
@@ -50,6 +57,7 @@ eval (If cond a b) = do
     case bool of
         (Bool False) -> eval b
         _            -> eval a
+eval e = return e
 
 apply :: Expr -> [Expr] -> REPL Expr
 apply (Fn f) xs = return $ f xs
@@ -71,6 +79,8 @@ apply (Lambda cs e) xs = do
     result <- eval e
     put ctx
     return result
+
+apply _ _ = return (Error "invalid expression")
 
 partialEval :: Expr -> REPL Expr
 partialEval (Symbol s) = do

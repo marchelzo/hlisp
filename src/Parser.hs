@@ -6,10 +6,8 @@ import Data.Char (isLower)
 
 import LispMath
 
-readExpr :: String -> Expr
-readExpr e = case parse parseExpr "" e of
-    Left err   -> error $ show err
-    Right expr -> expr
+readExpr :: String -> Either ParseError Expr
+readExpr e = parse parseExpr "" e
 
 parseExpr :: Parser Expr
 parseExpr =     try parseFunctionDef

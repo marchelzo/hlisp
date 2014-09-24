@@ -15,7 +15,11 @@ replSession :: REPL ()
 replSession = do
     liftIO $ putStr "> "
     exprStr <- liftIO getLine
-    let expr = readExpr exprStr
-    result <- eval expr
-    liftIO $ print result
+    when (exprStr /= "") $ do
+        let expr = readExpr exprStr
+        case expr of
+            Right e -> do
+                result <- eval e
+                liftIO $ print result
+            Left er -> liftIO (putStrLn ("syntax error:\n" ++ show er))
     replSession
