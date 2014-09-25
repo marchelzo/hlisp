@@ -1,8 +1,6 @@
 module Main where
 
-import Parser
 import Lisp
-import LispMath()
 import Control.Monad.State
 import System.IO
 

@@ -4,7 +4,7 @@ import Text.Parsec
 import Text.Parsec.String
 import Data.Char (isLower)
 
-import LispMath
+import LispValues
 
 readExpr :: String -> Either ParseError Expr
 readExpr e = parse parseExpr "" e
