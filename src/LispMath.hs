@@ -1,6 +1,7 @@
 module LispMath where
 
 import Data.List (intersperse)
+import Text.Printf (printf)
 
 data Expr = Number Double
           | String String
@@ -47,14 +48,17 @@ divide [Number x, Number y] = Number (x / y)
 lispSqrt :: [Expr] -> Expr
 lispSqrt [Number x] = Number (sqrt x)
 
+lispExp :: [Expr] -> Expr
+lispExp [Number x] = Number (exp x)
+
 cons :: [Expr] -> Expr
 cons [x, Quoted (List xs)] = Quoted (List (x:xs))
 
 car :: [Expr] -> Expr
-car [Quoted (List (x:xs))] = x
+car [Quoted (List (x:_))] = x
 
 cdr :: [Expr] -> Expr
-cdr [Quoted (List (x:xs))] = Quoted (List xs)
+cdr [Quoted (List (_:xs))] = Quoted (List xs)
 cdr e                      = Error ("error: cdr takes a pair, given: " ++ show e)
 
 nil :: [Expr] -> Expr
@@ -74,9 +78,6 @@ eq _                    = Error "error: eq takes two arguments that"
 mkList :: [Expr] -> Expr
 mkList xs = Quoted (List xs)
 
-lispMap :: [Expr] -> Expr
-lispMap [_, x]           = x
-
 lispAnd :: [Expr] -> Expr
 lispAnd [Bool p, Bool q] = Bool (p && q)
 lispAnd _                = Error "error: and requires two boolean arguments"
@@ -87,8 +88,8 @@ lispOr _                = Error "error: or requires two boolean arguments"
 
 showNum :: Double -> String
 showNum x
-    | x == fromIntegral (round x) = takeWhile (/='.') (show x)
-    | otherwise                   = show x
+    | x == fromIntegral (round x) && ((not . elem 'e') (show x)) = takeWhile (/='.') (show x)
+    | otherwise                   = printf "%-10f" x
 
 showQuoted :: Expr -> String
 showQuoted (List xs) = "(" ++ concat (intersperse " " $ (map show xs)) ++ ")"
