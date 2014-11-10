@@ -1,8 +1,8 @@
-module Lisp (REPL
-            ,runREPL
-            ,defaultContext
-            ,readExpr
-            ,eval) where
+module Lisp ( REPL
+            , runREPL
+            , defaultContext
+            , readExpr
+            , eval ) where
 
 import Parser
 import LispCore
