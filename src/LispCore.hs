@@ -13,16 +13,18 @@ type Context = M.Map String Expr
 
 
 defaultContext = M.fromList [("+", Fn plus), ("-", Fn minus), ("*", Fn mult), ("/", Fn divide)
-                            ,("cons", Fn cons     )
-                            ,("car" , Fn car      )
-                            ,("cdr" , Fn cdr      )
-                            ,("nil?", Fn nil      )
-                            ,("eq?" , Fn eq       )
-                            ,("list", Fn mkList   )
-                            ,("or"  , Fn lispOr   )
-                            ,("and" , Fn lispAnd  )
-                            ,("sqrt", Fn lispSqrt )
-                            ,("exp" , Fn lispExp  )
+                            ,("cons",        Fn cons     )
+                            ,("car" ,        Fn car      )
+                            ,("cdr" ,        Fn cdr      )
+                            ,("nil?",        Fn nil      )
+                            ,("eq?" ,        Fn eq       )
+                            ,("list",        Fn mkList   )
+                            ,("not",         Fn lispNot  )
+                            ,("or"  ,        Fn lispOr   )
+                            ,("and" ,        Fn lispAnd  )
+                            ,("sqrt",        Fn lispSqrt )
+                            ,("exp" ,        Fn lispExp  )
+                            ,("str-reverse", Fn strReverse )
                             ]
 
 newtype REPL a = REPL {

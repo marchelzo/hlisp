@@ -47,6 +47,9 @@ eq _                    = Error "error: eq takes two arguments that"
 mkList :: [Expr] -> Expr
 mkList xs = Quoted (List xs)
 
+lispNot :: [Expr] -> Expr
+lispNot [Bool p] = Bool (not p)
+
 lispAnd :: [Expr] -> Expr
 lispAnd [Bool p, Bool q] = Bool (p && q)
 lispAnd _                = Error "error: and requires two boolean arguments"
@@ -54,3 +57,7 @@ lispAnd _                = Error "error: and requires two boolean arguments"
 lispOr :: [Expr] -> Expr
 lispOr [Bool p, Bool q] = Bool (p || q)
 lispOr _                = Error "error: or requires two boolean arguments"
+
+strReverse :: [Expr] -> Expr
+strReverse [String s] = String (reverse s)
+strReverse _          = Error "error: strReverse takes a single string"
